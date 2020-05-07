@@ -27,6 +27,20 @@ before_script:
   - mv ansible-collection-${COLLECTION_NAME/_/-} ansible_collections/$COLLECTION_NAMESPACE/$COLLECTION_NAME
   - cd ansible_collections/$COLLECTION_NAMESPACE/$COLLECTION_NAME
 
-script:
-  # Test helix modules
-  - molecule test
+jobs:
+  include:
+    - stage: test
+      script:
+        # Test helix modules
+        - molecule test
+    # Define the release stage that runs semantic-release
+    - stage: release
+      # Advanced: optionally overwrite your default `script` step to skip the tests
+      script: skip
+      deploy:
+        provider: script
+        skip_cleanup: true
+        script:
+          # Use nvm to install and use the Node LTS version (nvm is installed on all Travis images)
+          - nvm install lts/*
+          - npx semantic-release -d
